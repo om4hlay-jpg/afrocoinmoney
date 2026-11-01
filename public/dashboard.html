@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>afrocoinmoney - Dashboard</title>
+  <link rel="icon" type="image/png" href="/icons/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#07211a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="afrocoin" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <script src="js/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="page-loader" id="pageLoader">
+    <img class="loader-logo" src="logo.png" alt="afrocoinmoney logo" />
+    <span>afrocoinmoney</span>
+  </div>
+
+  <div class="app">
+    <header class="top-nav">
+      <a class="logo logo-brand" href="/dashboard" aria-label="afrocoinmoney home"><img src="logo.png" alt="afrocoinmoney logo" /><span>afrocoin<em>money</em></span></a>
+      <div id="topGreet"></div>
+    </header>
+
+    <main class="content" id="content">
+      <section class="page active" id="page-home"></section>
+      <section class="page" id="page-bots"></section>
+      <section class="page" id="page-team"></section>
+      <section class="page" id="page-tickets"></section>
+      <section class="page" id="page-profile"></section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button type="button" class="nav-item active" data-page="home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+        <span class="nav-label">Home</span>
+      </button>
+      <button type="button" class="nav-item" data-page="bots">
+        <svg class="ico-stroke" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M7 16h10"/></svg>
+        <span class="nav-label">Terminals</span>
+      </button>
+      <button type="button" class="nav-item" data-page="team">
+        <svg class="ico-stroke" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Referrals</span>
+      </button>
+      <button type="button" class="nav-item" data-page="profile">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-label">Profile</span>
+        <span id="notifBadge" class="badge badge-notif" style="display:none;">0</span>
+      </button>
+    </nav>
+
+    <div class="txn-marquee" id="txnMarquee">
+      <div class="txn-marquee-track" id="txnMarqueeTrack">
+        <span id="txnMarqueeContent">Loading...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" id="modalBox"></div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/pages-util.js"></script>
+  <script src="js/pages-home.js"></script>
+  <script src="js/pages-bots.js"></script>
+  <script src="js/pages-team.js"></script>
+  <script src="js/pages-profile.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

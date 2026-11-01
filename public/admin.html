@@ -1,0 +1,470 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>afrocoinmoney - Admin</title>
+<link rel="icon" type="image/png" href="/logo.png" />
+<link rel="apple-touch-icon" href="/logo.png" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  // Tailwind config restricted to the afrocoinmoney palette:
+  // deep green + gold + white, so the console is unmistakably on-brand.
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+colors: {
+          brand: {
+            50:  '#f3faf5',  // bright text / white
+            100: '#dcefe4',  // secondary text
+            200: '#9cc3af',  // muted text
+            300: '#6da186',  // subdued text / subtle borders
+            400: '#2a8a63',  // accent green (borders, active state)
+            500: '#155239',  // hover surface
+            600: '#0f3322',  // card surface
+            700: '#0a2418',  // input / sub-card surface
+            800: '#07211a',  // sidebar / header
+            900: '#04140f'   // page base
+          },
+          gold: { DEFAULT: '#ffc94d', dark: '#c79a1b' },
+          success: '#22c55e',
+          danger: '#ff5b6a',
+          warning: '#ffc94d'
+        },
+        fontFamily: {
+          sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']
+        },
+        boxShadow: {
+          card: '0 1px 3px rgba(7,33,26,.12)',
+          panel: '0 8px 24px rgba(7,33,26,.16)'
+        }
+      }
+    }
+  };
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* Small local layer for things Tailwind utilities do not cover. */
+  [x-cloak] { display: none !important; }
+  .tabular { font-variant-numeric: tabular-nums; }
+  /* Scrollbars that fit the dark green console. */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #07211a; }
+  ::-webkit-scrollbar-thumb { background: #155239; border-radius: 6px; }
+  ::-webkit-scrollbar-thumb:hover { background: #1d6a4a; }
+</style>
+</head>
+<!-- ============================ LOGIN GATE ============================ -->
+<!-- The console never renders any data until a valid admin token is confirmed
+     by GET /api/admin/overview. A 401/403 keeps this gate on screen. -->
+<div id="gate" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-brand-800 via-brand-700 to-brand-600">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <img src="/logo.png" alt="afrocoinmoney logo" class="w-20 h-20 rounded-2xl shadow-panel mb-4 object-cover" />
+      <h1 class="text-2xl font-extrabold text-white">afrocoinmoney Admin</h1>
+      <p class="text-brand-200 text-sm mt-1">Restricted system console. Administrator access only.</p>
+    </div>
+
+    <form id="gateForm" class="bg-brand-600 border border-brand-400 rounded-2xl shadow-panel p-6 space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-brand-200 uppercase tracking-wide mb-1.5" for="gIdentifier">Phone or e-mail</label>
+        <input id="gIdentifier" type="text" autocomplete="username" required
+               class="w-full rounded-lg bg-brand-700 border border-brand-400 text-white placeholder-brand-200/60 px-3.5 py-2.5 text-sm outline-none focus:border-gold" placeholder="+2567..." />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-brand-200 uppercase tracking-wide mb-1.5" for="gPassword">Password</label>
+        <input id="gPassword" type="password" autocomplete="current-password" required
+               class="w-full rounded-lg bg-brand-700 border border-brand-400 text-white placeholder-brand-200/60 px-3.5 py-2.5 text-sm outline-none focus:border-gold" placeholder="••••••••" />
+      </div>
+      <p id="gateError" class="hidden text-sm text-danger bg-danger/10 border border-danger/30 rounded-lg px-3 py-2"></p>
+      <button id="gateBtn" type="submit"
+              class="w-full rounded-lg bg-gold hover:bg-gold-dark text-brand-700 font-bold py-2.5 text-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+        Sign in to console
+      </button>
+      <p class="text-[11px] leading-relaxed text-brand-200 text-center">
+        This console is for authorised treasury and operations staff only. Every action is recorded.
+      </p>
+    </form>
+  </div>
+</div>
+
+<!-- ============================ CONSOLE ============================ -->
+<div id="console" class="hidden lg:flex min-h-screen bg-brand-900">
+
+  <!-- Sidebar: fixed rail on desktop, off-canvas drawer on mobile -->
+  <aside id="sidebar"
+         class="fixed lg:static inset-y-0 left-0 z-40 w-64 shrink-0 bg-brand-800 border-r border-brand-400/60 flex flex-col
+                -translate-x-full lg:translate-x-0 transition-transform duration-200">
+    <div class="flex items-center gap-3 px-5 h-16 border-b border-brand-400">
+      <img src="/logo.png" alt="afrocoinmoney logo" class="w-9 h-9 rounded-xl shrink-0 object-cover" />
+      <div class="leading-tight">
+        <div class="font-extrabold text-white text-sm">afrocoinmoney</div>
+        <div class="text-[11px] text-brand-200">Admin console</div>
+      </div>
+      <button id="sidebarClose" class="ml-auto lg:hidden text-brand-200 hover:text-white p-1" aria-label="Close menu">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto p-3 space-y-1">
+      <button data-view="dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-white bg-brand-400">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h7V3H3v9Zm11 9h7v-9h-7v9ZM3 21h7v-5H3v5Zm11-12h7V3h-7v6Z"/></svg>
+        Dashboard
+      </button>
+      <button data-view="payouts" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-brand-200 hover:bg-brand-500 hover:text-white">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Payouts
+        <span id="navPayoutBadge" class="hidden ml-auto text-[11px] font-bold bg-gold text-brand-700 rounded-full px-2 py-0.5 tabular">0</span>
+      </button>
+      <button data-view="members" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-brand-200 hover:bg-brand-500 hover:text-white">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm13 14v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11"/></svg>
+        Members
+      </button>
+      <button data-view="transactions" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-brand-200 hover:bg-brand-500 hover:text-white">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4zM4 9h16M9 9v10"/></svg>
+        Transactions
+      </button>
+      <button data-view="credentials" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-brand-200 hover:bg-brand-500 hover:text-white">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 11a5 5 0 0 1 5-5 5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5zm0 0V7m0 4v4m0-4H5m2 0h4m-2 10a5 5 0 0 1 0-10"/></svg>
+        Admin Credentials
+      </button>
+      <button data-view="wallets" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-brand-200 hover:bg-brand-500 hover:text-white">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3V7zm0-3h18v2H3V4zm0 13h18v2H3v-2z"/></svg>
+        Wallets
+      </button>
+      <button data-view="logs" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-brand-200 hover:bg-brand-500 hover:text-white">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v2H4zM4 11h16v2H4zM4 17h16v2H4z"/></svg>
+        System Logs
+      </button>
+      <button data-view="rates" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-brand-200 hover:bg-brand-500 hover:text-white">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 7v5h-5"/></svg>
+        FX Rates
+      </button>
+      <button data-view="profile" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-brand-200 hover:bg-brand-500 hover:text-white">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        My Profile
+      </button>
+    </nav>
+
+    <div class="p-3 border-t border-brand-400 space-y-1">
+      <a href="/index.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-brand-200 hover:bg-brand-500 hover:text-white">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+        Member app
+      </a>
+      <button id="signOutBtn" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-danger hover:bg-danger/10">
+        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Sign out
+      </button>
+    </div>
+  </aside>
+  <div id="sidebarOverlay" class="hidden fixed inset-0 z-30 bg-black/50 lg:hidden"></div>
+
+  <!-- Main column -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <header class="sticky top-0 z-20 h-16 bg-brand-600/95 backdrop-blur border-b border-brand-400 flex items-center gap-3 px-4 lg:px-6">
+      <button id="sidebarOpen" class="lg:hidden text-brand-200 hover:text-white p-1.5 -ml-1.5" aria-label="Open menu">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <h2 id="viewTitle" class="font-extrabold text-white text-lg">Dashboard</h2>
+      <div class="ml-auto flex items-center gap-3">
+        <span id="feedStatus" class="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-semibold text-brand-200 bg-brand-700 border border-brand-400 rounded-full px-2.5 py-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-success"></span> Live
+        </span>
+        <button id="refreshBtn" class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 bg-gold hover:bg-gold-dark rounded-lg px-3 py-2 transition-colors">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <main class="flex-1 p-4 lg:p-6 space-y-6">
+
+      <!-- DASHBOARD -->
+      <section data-panel="dashboard" class="space-y-6">
+        <div id="kpiGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div class="bg-brand-600 border border-brand-400 rounded-2xl shadow-card p-5">
+            <h3 class="font-bold text-white mb-4">Recent Transactions</h3>
+            <div id="dashTxns" class="space-y-2"></div>
+          </div>
+          <div class="bg-brand-600 border border-brand-400 rounded-2xl shadow-card p-5">
+            <h3 class="font-bold text-white mb-4">Platform Money (USD)</h3>
+            <div id="dashMoney" class="space-y-2"></div>
+            <div class="mt-4 pt-3 border-t border-brand-400/60">
+              <button id="buyTerminalBtn" class="w-full text-xs font-bold text-brand-700 bg-gold hover:bg-gold-dark rounded-lg px-3 py-2">Buy a Terminal (my own wallet)</button>
+            </div>
+            <div class="mt-2">
+              <button id="fundMyWalletBtn" class="w-full text-xs font-bold text-white bg-brand-400 hover:bg-brand-300 rounded-lg px-3 py-2">Fund my wallet (self-credit)</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAYOUTS -->
+      <section data-panel="payouts" class="hidden space-y-4">
+        <div class="bg-brand-600 border border-brand-400 rounded-2xl shadow-card p-5">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="font-bold text-white">Pending Payout Queue</h3>
+              <p class="text-xs text-brand-200 mt-0.5">Settle once the crypto leaves the treasury wallet, or refund if the transfer bounced.</p>
+            </div>
+            <span id="payoutCount" class="text-xs font-bold bg-gold text-brand-700 rounded-full px-2.5 py-1 tabular">0</span>
+          </div>
+          <div id="payoutList" class="space-y-3"></div>
+        </div>
+      </section>
+
+      <!-- MEMBERS -->
+      <section data-panel="members" class="hidden space-y-4">
+        <div class="bg-brand-600 border border-brand-400 rounded-2xl shadow-card p-5">
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <h3 class="font-bold text-white">Members</h3>
+            <div class="ml-auto flex items-center gap-2">
+              <input id="memberSearch" type="search" placeholder="Search phone, e-mail or name"
+                     class="rounded-lg bg-brand-700 border border-brand-400 text-white placeholder-brand-200/50 text-sm px-3 py-2 w-full sm:w-56 outline-none focus:border-gold" />
+              <button id="memberSearchBtn" class="text-xs font-bold text-brand-700 bg-gold hover:bg-gold-dark rounded-lg px-3 py-2">Search</button>
+            </div>
+          </div>
+          <div class="overflow-x-auto -mx-5 px-5">
+            <table class="w-full text-sm min-w-[880px]">
+              <thead>
+                <tr class="text-left text-[11px] uppercase tracking-wide text-brand-200 border-b border-brand-400">
+                  <th class="py-2.5 pr-3 font-semibold">Member</th>
+                  <th class="py-2.5 pr-3 font-semibold">Country</th>
+                  <th class="py-2.5 pr-3 font-semibold text-right">Wallet</th>
+                  <th class="py-2.5 pr-3 font-semibold text-right">Deposited</th>
+                  <th class="py-2.5 pr-3 font-semibold text-right">Withdrawn</th>
+                  <th class="py-2.5 pr-3 font-semibold text-right">Referrals</th>
+                  <th class="py-2.5 pr-3 font-semibold">Joined</th>
+                  <th class="py-2.5 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="memberRows" class="divide-y divide-brand-400/60"></tbody>
+            </table>
+          </div>
+<div class="flex items-center justify-between mt-4 gap-3">
+              <span id="memberTotal" class="text-xs text-brand-200 tabular"></span>
+              <div class="flex gap-2">
+                <button id="memberPrev" class="text-xs font-bold rounded-lg border border-brand-400 px-3 py-1.5 text-brand-200 hover:text-white disabled:opacity-40">Previous</button>
+                <button id="memberNext" class="text-xs font-bold rounded-lg border border-brand-400 px-3 py-1.5 text-brand-200 hover:text-white disabled:opacity-40">Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TRANSACTIONS -->
+      <section data-panel="transactions" class="hidden space-y-4">
+        <div class="bg-brand-600 border border-brand-400 rounded-2xl shadow-card p-5">
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <h3 class="font-bold text-white">Transaction Ledger</h3>
+            <div class="ml-auto flex flex-wrap items-center gap-2">
+              <select id="txnType" class="rounded-lg bg-brand-700 border border-brand-400 text-white text-sm px-3 py-2 outline-none focus:border-gold">
+                <option value="">All types</option>
+                <option value="deposit">Deposits</option>
+                <option value="withdrawal">Withdrawals</option>
+                <option value="earnings">Earnings</option>
+                <option value="referral_bonus">Referral bonus</option>
+<option value="referral_claim">Referral earnings claimed</option>
+                <option value="admin_adjustment">Adjustments</option>
+              </select>
+              <select id="txnStatus" class="rounded-lg bg-brand-700 border border-brand-400 text-white text-sm px-3 py-2 outline-none focus:border-gold">
+                <option value="">All statuses</option>
+                <option value="success">Success</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+          </div>
+          <div class="overflow-x-auto -mx-5 px-5">
+            <table class="w-full text-sm min-w-[840px]">
+              <thead>
+                <tr class="text-left text-[11px] uppercase tracking-wide text-brand-200 border-b border-brand-400">
+                  <th class="py-2.5 pr-3 font-semibold">ID</th>
+                  <th class="py-2.5 pr-3 font-semibold">Member</th>
+                  <th class="py-2.5 pr-3 font-semibold">Type</th>
+                  <th class="py-2.5 pr-3 font-semibold">Method</th>
+                  <th class="py-2.5 pr-3 font-semibold text-right">Amount</th>
+                  <th class="py-2.5 pr-3 font-semibold">Status</th>
+                  <th class="py-2.5 font-semibold">Date</th>
+                </tr>
+              </thead>
+              <tbody id="txnRows" class="divide-y divide-brand-400/60"></tbody>
+            </table>
+          </div>
+          <div class="flex items-center justify-between mt-4 gap-3">
+            <span id="txnTotal" class="text-xs text-brand-200 tabular"></span>
+            <div class="flex gap-2">
+              <button id="txnPrev" class="text-xs font-bold rounded-lg border border-brand-400 px-3 py-1.5 text-brand-200 hover:text-white disabled:opacity-40">Previous</button>
+              <button id="txnNext" class="text-xs font-bold rounded-lg border border-brand-400 px-3 py-1.5 text-brand-200 hover:text-white disabled:opacity-40">Next</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADMIN CREDENTIALS -->
+      <section data-panel="credentials" class="hidden space-y-4">
+        <div class="bg-brand-600 border border-brand-400 rounded-2xl shadow-card p-5">
+          <h3 class="font-bold text-white mb-1">Administrator Credentials</h3>
+          <p class="text-xs text-brand-200 mt-0.5">Everyone with console access. Grant or revoke access here; you cannot remove your own admin flag.</p>
+          <div class="overflow-x-auto -mx-5 px-5 mt-4">
+            <table class="w-full text-sm min-w-[760px]">
+              <thead>
+                <tr class="text-left text-[11px] uppercase tracking-wide text-brand-200 border-b border-brand-400">
+                  <th class="py-2.5 pr-3 font-semibold">Account</th>
+                  <th class="py-2.5 pr-3 font-semibold">Country</th>
+                  <th class="py-2.5 pr-3 font-semibold text-right">Joined</th>
+                  <th class="py-2.5 pr-3 font-semibold text-right">Referrals</th>
+                  <th class="py-2.5 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="credRows" class="divide-y divide-brand-400/60"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADMIN PROFILE (own credentials) -->
+      <section data-panel="profile" class="hidden space-y-4">
+        <div class="bg-brand-600 border border-brand-400 rounded-2xl shadow-card p-5">
+          <h3 class="font-bold text-white mb-1">My Profile</h3>
+          <p class="text-xs text-brand-200 mt-0.5">Change your own display name, currency or password. These settings only affect the console view.</p>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-brand-200 uppercase tracking-wide mb-1.5" for="myDisplayName">Display name</label>
+                <input id="myDisplayName" type="text" maxlength="100"
+                       class="w-full rounded-lg bg-brand-700 border border-brand-400 text-white placeholder-brand-200/50 px-3 py-2.5 text-sm outline-none focus:border-gold" />
+                <button id="saveMyName" class="mt-2 text-xs font-bold text-brand-700 bg-gold hover:bg-gold-dark rounded-lg px-3 py-2">Save name</button>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-brand-200 uppercase tracking-wide mb-1.5" for="myCurrency">Display currency</label>
+                <select id="myCurrency" class="w-full rounded-lg bg-brand-700 border border-brand-400 text-white text-sm px-3 py-2.5 outline-none focus:border-gold"></select>
+                <button id="saveMyCurrency" class="mt-2 text-xs font-bold text-brand-700 bg-gold hover:bg-gold-dark rounded-lg px-3 py-2">Save currency</button>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-brand-200 uppercase tracking-wide mb-1.5" for="myCurPass">Current password</label>
+                <input id="myCurPass" type="password"
+                       class="w-full rounded-lg bg-brand-700 border border-brand-400 text-white placeholder-brand-200/50 px-3 py-2.5 text-sm outline-none focus:border-gold" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-brand-200 uppercase tracking-wide mb-1.5" for="myNewPass">New password (min 4 characters)</label>
+                <input id="myNewPass" type="password"
+                       class="w-full rounded-lg bg-brand-700 border border-brand-400 text-white placeholder-brand-200/50 px-3 py-2.5 text-sm outline-none focus:border-gold" />
+              </div>
+              <button id="saveMyPass" class="text-xs font-bold text-brand-700 bg-gold hover:bg-gold-dark rounded-lg px-3 py-2">Change password</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- WALLET MANAGEMENT -->
+      <section data-panel="wallets" class="hidden space-y-4">
+        <div class="bg-brand-600 border border-brand-400 rounded-2xl shadow-card p-5">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+            <div>
+              <h3 class="font-bold text-white">Manage Crypto Wallets</h3>
+              <p class="text-xs text-brand-200 mt-0.5">Which coins this merchant can actually receive from WolvPay. Uncheck a coin to hide it from depositors and reject it on withdrawal; check one to enable it. Treasury cannot pay out a coin it has no wallet for.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="walletStatus" class="text-[11px] font-semibold text-brand-200"></span>
+              <button id="syncWalletsBtn" class="text-xs font-bold text-brand-700 bg-gold hover:bg-gold-dark rounded-lg px-3 py-2">Sync from WolvPay</button>
+              <button id="saveWalletsBtn" class="text-xs font-bold text-white bg-brand-400 hover:bg-brand-300 rounded-lg px-3 py-2">Save selection</button>
+            </div>
+          </div>
+          <div id="walletList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-4"></div>
+          <p class="text-[11px] text-brand-200 mt-3">Tip: if the env whitelist (WOLVPAY_ENABLED_COINS) is narrower than what WolvPay returns, the console shows the mismatch and the sync button pulls the full list.</p>
+        </div>
+      </section>
+
+      <!-- FX RATES -->
+      <section data-panel="rates" class="hidden space-y-4">
+        <div class="bg-brand-600 border border-brand-400 rounded-2xl shadow-card p-5">
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <div>
+              <h3 class="font-bold text-white">FX Rate Feed</h3>
+              <p class="text-xs text-brand-200 mt-0.5">Display rates, refreshed daily from free public providers with a static fallback.</p>
+            </div>
+            <span id="rateMyCur" class="ml-auto text-xs font-bold text-gold bg-brand-800 border border-brand-400 rounded-full px-3 py-1"></span>
+            <span id="rateSource" class="text-xs font-bold rounded-full px-3 py-1"></span>
+          </div>
+          <div id="rateGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- System Logs panel -->
+<div id="logsPanel" class="hidden fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+  <div class="w-full max-w-4xl max-h-[85vh] bg-brand-700 border border-brand-400 rounded-2xl shadow-panel flex flex-col">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-brand-400">
+      <h3 class="font-bold text-white">System Logs</h3>
+      <div class="flex items-center gap-2">
+        <select id="logLevel" class="rounded-lg bg-brand-800 border border-brand-400 text-white text-xs px-2 py-1.5 outline-none focus:border-gold">
+          <option value="error">Errors</option>
+          <option value="warn" selected>Warnings+</option>
+          <option value="info">Info+</option>
+          <option value="debug">Debug+</option>
+        </select>
+        <button id="logRefresh" class="text-xs font-bold text-brand-700 bg-gold hover:bg-gold-dark rounded-lg px-3 py-1.5">Refresh</button>
+        <button id="logClear" class="text-xs font-bold text-danger hover:bg-danger/10 rounded-lg px-3 py-1.5">Clear</button>
+        <button id="logClose" class="text-brand-200 hover:text-white p-1" aria-label="Close">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="logBody" class="flex-1 overflow-y-auto p-4 space-y-1.5 font-mono text-xs"></div>
+  </div>
+</div>
+
+<!-- Wallet adjustment modal -->
+  <div id="adjustModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+    <div class="w-full max-w-sm bg-brand-600 border border-brand-400 rounded-2xl shadow-panel p-6">
+      <h3 class="font-bold text-white mb-1">Adjust Wallet</h3>
+      <p id="adjustWho" class="text-xs text-brand-200 mb-4"></p>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-brand-200 uppercase tracking-wide mb-1.5" for="adjustAmount">Amount in USD (negative to debit)</label>
+          <input id="adjustAmount" type="number" step="0.01" placeholder="e.g. 25 or -25"
+                 class="w-full rounded-lg bg-brand-700 border border-brand-400 text-white placeholder-brand-200/50 px-3 py-2.5 text-sm outline-none focus:border-gold" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-brand-200 uppercase tracking-wide mb-1.5" for="adjustNote">Reason (recorded in the ledger)</label>
+          <input id="adjustNote" type="text" maxlength="120" placeholder="Manual correction"
+                 class="w-full rounded-lg bg-brand-700 border border-brand-400 text-white placeholder-brand-200/50 px-3 py-2.5 text-sm outline-none focus:border-gold" />
+        </div>
+      </div>
+      <div class="flex gap-2 mt-5">
+        <button id="adjustCancel" class="flex-1 rounded-lg border border-brand-400 text-brand-200 hover:text-white text-sm font-bold py-2.5">Cancel</button>
+        <button id="adjustConfirm" class="flex-1 rounded-lg bg-gold hover:bg-gold-dark text-brand-700 text-sm font-bold py-2.5 disabled:opacity-60">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Super-user action modal (suspend / reset password / delete) -->
+  <div id="actionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+    <div class="w-full max-w-sm bg-brand-600 border border-brand-400 rounded-2xl shadow-panel p-6">
+      <h3 id="actionTitle" class="font-bold text-white mb-1"></h3>
+      <p id="actionBody" class="text-xs text-brand-200 mb-4"></p>
+      <input id="actionInput" class="w-full rounded-lg bg-brand-700 border border-brand-400 text-white placeholder-brand-200/50 px-3 py-2.5 text-sm outline-none focus:border-gold mb-4" />
+      <div class="flex gap-2">
+        <button id="actionCancel" class="flex-1 rounded-lg border border-brand-400 text-brand-200 hover:text-white text-sm font-bold py-2.5">Cancel</button>
+        <button id="actionConfirm" class="flex-1 rounded-lg text-sm font-bold py-2.5 disabled:opacity-60">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+<!-- Toast host -->
+<div id="toast" class="hidden fixed bottom-5 right-5 z-[60] max-w-sm rounded-xl px-4 py-3 text-sm font-semibold shadow-panel border"></div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>
+
+

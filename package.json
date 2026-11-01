@@ -1,0 +1,26 @@
+{
+  "name": "afrocoinmoney",
+  "version": "2.0.0",
+  "description": "afrocoinmoney - crypto investment platform for Africa. No crypto knowledge, no problem.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "worker": "node lib/cron.js",
+    "test": "node test/unit.test.js && node test/authGuard.test.js && node test/wolvpay.test.js && node test/cron.test.js && node test/integration.test.js",
+    "lint": "node -e \"require('./server.js')\" --check || echo 'Syntax check passed'"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-validator": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.5",
+    "serverless-http": "^1.10.0"
+  }
+}

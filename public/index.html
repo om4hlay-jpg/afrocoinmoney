@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>afrocoinmoney - Crypto investing for Africa</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Pick a terminal, earn a daily return, withdraw to your own crypto wallet. Built for first-time crypto investors in Africa.">
+<meta name="theme-color" content="#07211a">
+<link rel="icon" type="image/png" href="/icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="afrocoin">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+/* ============================================================
+   afrocoinmoney landing page
+   Brand palette is locked to the afrocoin tokens (see /css/style.css).
+   ONE accent: gold. Everything else is the green family + white.
+   Shape rule: 14px cards, 10px controls, pill only for badges.
+   ============================================================ */
+
+:root{
+  --lp-radius: 14px;
+  --lp-radius-sm: 10px;
+  --lp-pad: clamp(20px, 5vw, 32px);
+  --lp-shell: 1140px;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:var(--afrocoin-off-white);
+  color:var(--afrocoin-green);
+  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; }
+
+.shell{ width:100%; max-width:var(--lp-shell); margin:0 auto; padding:0 var(--lp-pad); }
+
+/* ---------- Type scale ---------- */
+.h-xl{ font-size:clamp(2rem, 5.2vw, 3.5rem); line-height:1.08; letter-spacing:-.025em; font-weight:800; margin:0; }
+.h-lg{ font-size:clamp(1.5rem, 3.2vw, 2.125rem); line-height:1.18; letter-spacing:-.02em; font-weight:750; margin:0; }
+.h-md{ font-size:clamp(1.0625rem, 2vw, 1.25rem); line-height:1.35; font-weight:700; margin:0; }
+.lede{ font-size:clamp(1rem, 1.6vw, 1.125rem); color:var(--afrocoin-muted-dark); max-width:60ch; margin:0; }
+.small{ font-size:.875rem; color:var(--afrocoin-muted-dark); margin:0; }
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  font:inherit; font-weight:700; text-decoration:none; cursor:pointer;
+  padding:.875rem 1.5rem; min-height:48px;
+  border-radius:var(--lp-radius-sm); border:2px solid transparent;
+  transition:transform .12s cubic-bezier(.16,1,.3,1), background-color .18s, border-color .18s, color .18s, box-shadow .18s;
+}
+.btn:active{ transform:translateY(1px) scale(.985); }
+.btn:focus-visible{ outline:3px solid var(--afrocoin-gold); outline-offset:2px; }
+
+.btn--accent{ background:var(--afrocoin-gold); color:var(--afrocoin-green); }
+.btn--accent:hover{ background:var(--afrocoin-gold-dark); box-shadow:0 8px 24px rgba(255,201,77,.35); }
+.btn--ghost{ background:transparent; color:var(--afrocoin-green); border-color:rgba(7,33,26,.22); }
+.btn--ghost:hover{ border-color:var(--afrocoin-green); background:rgba(7,33,26,.04); }
+.btn--onDark{ background:transparent; color:var(--afrocoin-white); border-color:rgba(255,255,255,.4); }
+.btn--onDark:hover{ border-color:var(--afrocoin-white); background:rgba(255,255,255,.08); }
+
+/* ---------- Reveal / scroll animations ---------- */
+.reveal{
+  opacity:0;
+  transform:translateY(26px);
+  transition:opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1);
+  will-change:opacity, transform;
+}
+.reveal.reveal--left{ transform:translateX(-26px) translateY(26px); }
+.reveal.reveal--right{ transform:translateX(26px) translateY(26px); }
+.reveal.reveal--scale{ transform:scale(.92) translateY(26px); }
+.reveal.is-visible{
+  opacity:1;
+  transform:none;
+}
+
+/* Staggered children */
+.reveal-stagger > *{
+  opacity:0;
+  transform:translateY(20px);
+  transition:opacity .5s cubic-bezier(.22,1,.36,1), transform .5s cubic-bezier(.22,1,.36,1);
+}
+.reveal-stagger.is-visible > *{
+  opacity:1;
+  transform:none;
+}
+.reveal-stagger.is-visible > *:nth-child(1){ transition-delay:.06s; }
+.reveal-stagger.is-visible > *:nth-child(2){ transition-delay:.14s; }
+.reveal-stagger.is-visible > *:nth-child(3){ transition-delay:.22s; }
+.reveal-stagger.is-visible > *:nth-child(4){ transition-delay:.30s; }
+.reveal-stagger.is-visible > *:nth-child(5){ transition-delay:.38s; }
+.reveal-stagger.is-visible > *:nth-child(6){ transition-delay:.46s; }
+
+/* Counter animation */
+@keyframes countUp{
+  from{ opacity:0; transform:translateY(6px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+.counter{ animation:countUp .7s cubic-bezier(.22,1,.36,1) both; }
+
+/* Card hover lift */
+.card-lift{
+  transition:transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s, border-color .28s;
+}
+.card-lift:hover{
+  transform:translateY(-6px);
+  box-shadow:0 20px 40px -12px rgba(7,33,26,.18);
+  border-color:rgba(7,33,26,.12);
+}
+
+/* Pulse accent for hero CTA */
+@keyframes pulseRing{
+  0%{ box-shadow:0 0 0 0 rgba(255,201,77,.55); }
+  70%{ box-shadow:0 0 0 14px rgba(255,201,77,0); }
+  100%{ box-shadow:0 0 0 0 rgba(255,201,77,0); }
+}
+.btn--accent{ animation:pulseRing 3s infinite; }
+
+/* Bento cells: subtle hover lift once revealed */
+.bento__cell{ transition:transform .28s cubic-bezier(.16,1,.3,1), box-shadow .28s; }
+.bento__cell.is-visible:hover{ transform:translateY(-4px); box-shadow:0 16px 32px -12px rgba(7,33,26,.16); }
+
+/* Steps: staggered reveal delays */
+.steps .steps__item:nth-child(2){ transition-delay:.1s; }
+.steps .steps__item:nth-child(3){ transition-delay:.2s; }
+.steps .steps__item:nth-child(4){ transition-delay:.3s; }
+
+/* ---------- Nav ---------- */
+.nav{
+  position:sticky; top:0; z-index:60;
+  background:rgba(7,33,26,.92);
+  backdrop-filter:saturate(1.4) blur(10px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.nav__in{ display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:68px; }
+.brand{ display:inline-flex; align-items:center; gap:.625rem; text-decoration:none; }
+.brand img{ width:34px; height:34px; border-radius:9px; }
+.brand b{ color:var(--afrocoin-white); font-weight:800; font-size:1.125rem; letter-spacing:-.01em; }
+.brand i{ font-style:normal; color:var(--afrocoin-success); }
+.nav__links{ display:flex; align-items:center; gap:1.75rem; list-style:none; margin:0; padding:0; }
+.nav__links a{ color:rgba(255,255,255,.78); text-decoration:none; font-size:.9375rem; font-weight:500; }
+.nav__links a:hover{ color:var(--afrocoin-white); }
+.nav__actions{ display:flex; align-items:center; gap:.5rem; }
+.nav__actions .btn{ min-height:42px; padding:.5rem 1.125rem; font-size:.9375rem; }
+.nav__burger{
+  display:none; background:none; border:1.5px solid rgba(255,255,255,.28);
+  border-radius:9px; width:42px; height:42px; padding:8px; cursor:pointer;
+}
+.nav__burger svg{ width:100%; height:100%; stroke:var(--afrocoin-white); stroke-width:2.2; stroke-linecap:round; fill:none; }
+@media (max-width:860px){
+  .nav__links{
+    display:none; position:absolute; top:100%; left:0; right:0; z-index:59;
+    flex-direction:column; align-items:stretch; gap:0;
+    background:rgba(7,33,26,.98); backdrop-filter:saturate(1.4) blur(10px);
+    border-bottom:1px solid rgba(255,255,255,.1);
+    padding:.5rem 1.25rem calc(.75rem + env(safe-area-inset-bottom));
+  }
+  .nav__links.open{ display:flex; }
+  .nav__links a{ display:block; padding:.875rem .25rem; font-size:1rem; border-bottom:1px solid rgba(255,255,255,.06); }
+  .nav__links li:last-child a{ border-bottom:none; }
+  .nav__burger{ display:block; }
+}
+@media (max-width:520px){ .nav__actions .btn--onDark{ display:none; } }
+
+/* ---------- Hero: asymmetric split ---------- */
+.hero{
+  background:
+    radial-gradient(120% 90% at 82% 8%, rgba(29,106,74,.55) 0%, transparent 62%),
+    linear-gradient(158deg, var(--afrocoin-green) 0%, var(--afrocoin-green-dark) 100%);
+  color:var(--afrocoin-white);
+  padding:clamp(3rem,7vw,5.5rem) 0 clamp(3.5rem,8vw,6rem);
+}
+.hero__grid{ display:grid; grid-template-columns:1.08fr .92fr; gap:clamp(2rem,5vw,4.5rem); align-items:center; }
+@media (max-width:900px){ .hero__grid{ grid-template-columns:1fr; } }
+
+.hero h1{ margin-bottom:1.25rem; }
+.hero h1 em{ font-style:normal; color:var(--afrocoin-gold); }
+.hero__sub{ color:rgba(255,255,255,.74); font-size:clamp(1rem,1.7vw,1.125rem); max-width:46ch; margin:0 0 2rem; }
+.hero__cta{ display:flex; flex-wrap:wrap; gap:.75rem; }
+.hero__note{ margin:1.25rem 0 0; font-size:.8125rem; color:rgba(255,255,255,.55); }
+
+/* Hero visual: the real coin mark. Not a mocked-up product UI. */
+.hero__art{
+  position:relative; aspect-ratio:1; width:100%; max-width:420px; margin-inline:auto;
+  display:grid; place-items:center;
+  border-radius:50%;
+  background:radial-gradient(circle at 34% 28%, rgba(53,194,110,.22), transparent 62%);
+  border:1px solid rgba(255,255,255,.12);
+}
+.hero__art img{ width:58%; border-radius:50%; filter:drop-shadow(0 24px 48px rgba(0,0,0,.45)); }
+@media (max-width:900px){ .hero__art{ display:none; } }
+
+/* ---------- Proof strip: real, live figures ---------- */
+.proof{ background:var(--afrocoin-white); border-bottom:1px solid var(--afrocoin-border); }
+.proof__grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--afrocoin-border); }
+@media (max-width:640px){ .proof__grid{ grid-template-columns:1fr; } }
+.proof__cell{ background:var(--afrocoin-white); padding:1.5rem var(--lp-pad); text-align:center; }
+.proof__num{ font-size:clamp(1.5rem,3vw,2rem); font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.proof__lbl{ font-size:.8125rem; color:var(--afrocoin-muted-dark); margin-top:.125rem; }
+
+/* ---------- Sections ---------- */
+.section{ padding:clamp(3.5rem,8vw,6.5rem) 0; }
+.section--tint{ background:var(--afrocoin-white); }
+.section__head{ max-width:62ch; margin-bottom:clamp(2.5rem,5vw,3.75rem); }
+.section__head p{ margin-top:1rem; }
+
+/* Bento: varied cell sizes + real surface variation (no six white cards). */
+.bento{ display:grid; grid-template-columns:repeat(12,1fr); gap:1rem; }
+.bento__cell{
+  grid-column:span 4;
+  padding:var(--lp-pad);
+  border-radius:var(--lp-radius);
+  border:1px solid var(--afrocoin-border);
+  background:var(--afrocoin-white);
+}
+.bento__cell--wide{ grid-column:span 8; }
+.bento__cell--tall{ grid-column:span 4; grid-row:span 2; }
+.bento__cell--dark{
+  background:linear-gradient(152deg, var(--afrocoin-green) 0%, var(--afrocoin-green-mid) 100%);
+  border-color:transparent; color:var(--afrocoin-white);
+}
+.bento__cell--dark p{ color:rgba(255,255,255,.72); }
+.bento__cell--wash{
+  background:
+    linear-gradient(180deg, rgba(34,197,94,.09), rgba(34,197,94,.03)),
+    var(--afrocoin-white);
+}
+.bento__cell--wash{
+  background-image:repeating-linear-gradient(-45deg, rgba(29,106,74,.05) 0 1px, transparent 1px 11px),
+                   linear-gradient(180deg, rgba(34,197,94,.10), rgba(34,197,94,.03));
+}
+.bento__cell h3{ margin-bottom:.5rem; }
+.bento__cell p{ font-size:.9375rem; color:var(--afrocoin-muted-dark); margin:0; }
+.bento__cell--dark h3{ color:var(--afrocoin-white); }
+.bento__cell--dark .stat-line{ color:var(--afrocoin-gold); font-weight:800; font-size:1.75rem; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+@media (max-width:860px){
+  .bento__cell, .bento__cell--wide, .bento__cell--tall{ grid-column:span 12; grid-row:auto; }
+}
+
+/* ---------- Levels: sparse hairline rows, not eight identical cards ---------- */
+.levels{ border-top:1px solid var(--afrocoin-border); }
+.levels__row{
+  display:grid; grid-template-columns:1.4fr .8fr .8fr .7fr;
+  gap:1rem; align-items:center;
+  padding:1.0625rem .25rem;
+  border-bottom:1px solid var(--afrocoin-border);
+}
+.levels__row--head{ padding-top:.5rem; padding-bottom:.5rem; border-bottom:1px solid var(--afrocoin-green); }
+.levels__row--head span{ font-size:.75rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--afrocoin-muted-dark); }
+.levels__name{ font-weight:700; }
+.levels__num{ font-variant-numeric:tabular-nums; font-weight:700; }
+.levels__num--pct{ color:var(--afrocoin-success); }
+@media (max-width:640px){
+  .levels__row{ grid-template-columns:1fr 1fr; gap:.5rem; }
+  .levels__row--head{ display:none; }
+}
+
+/* ---------- Steps: verb-noun labels, no numbered step prefixes ---------- */
+.steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; counter-reset:s; }
+@media (max-width:860px){ .steps{ grid-template-columns:repeat(2,1fr); } }
+@media (max-width:520px){ .steps{ grid-template-columns:1fr; } }
+.steps__item{ counter-increment:s; padding-top:1.25rem; border-top:2px solid var(--afrocoin-border); }
+.steps__item::before{
+  content:counter(s, decimal-leading-zero);
+  display:block; font-size:.8125rem; font-weight:800;
+  color:var(--afrocoin-gold-dark); margin-bottom:.625rem; font-variant-numeric:tabular-nums;
+}
+.steps__item h3{ margin-bottom:.375rem; }
+.steps__item p{ font-size:.9375rem; color:var(--afrocoin-muted-dark); margin:0; }
+
+/* ---------- Welcome-bonus popup (scroll trigger, guests only) ---------- */
+.wb-overlay{ position:fixed; inset:0; z-index:200; display:flex; align-items:flex-end; justify-content:center; }
+@media (min-width:520px){ .wb-overlay{ align-items:center; } }
+.wb-overlay[hidden]{ display:none; }
+.wb-backdrop{ position:absolute; inset:0; background:rgba(7,33,26,.65); backdrop-filter:blur(2px); opacity:0; transition:opacity .35s; }
+.wb-overlay.show .wb-backdrop{ opacity:1; }
+.wb-box{
+  position:relative; width:100%; max-width:380px; text-align:center;
+  background:var(--afrocoin-white); color:var(--afrocoin-green-dark);
+  border-radius:18px 18px 0 0; padding:1.75rem 1.375rem 1.25rem;
+  transform:translateY(24px); opacity:0; transition:transform .35s cubic-bezier(.16,1,.3,1), opacity .35s;
+  box-shadow:0 -8px 40px rgba(7,33,26,.4);
+}
+@media (min-width:520px){ .wb-box{ border-radius:18px; padding-bottom:1.75rem; transform:translateY(16px) scale(.97); } }
+.wb-overlay.show .wb-box{ transform:none; opacity:1; }
+.wb-close{ position:absolute; top:.5rem; right:.75rem; background:none; border:none; font-size:1.75rem; line-height:1; color:var(--afrocoin-muted-dark); padding:.25rem .5rem; }
+.wb-badge{
+  display:inline-flex; align-items:center; gap:.5rem;
+  background:var(--afrocoin-green); color:var(--afrocoin-gold);
+  font-weight:800; font-size:1rem; letter-spacing:.02em;
+  padding:.5rem .875rem; border-radius:999px; margin-bottom:.875rem;
+}
+.wb-box h3{ font-size:1.25rem; margin-bottom:.5rem; }
+.wb-box p{ font-size:.9375rem; color:var(--afrocoin-muted-dark); margin:0 auto 1.125rem; max-width:30ch; }
+.wb-cta{ display:flex; justify-content:center; width:100%; }
+.wb-later{ margin-top:.625rem; background:none; border:none; font-size:.8125rem; font-weight:600; color:var(--afrocoin-muted-dark); padding:.5rem; }
+
+/* ---------- Live activity: real data from the API ---------- */
+.activity{ background:var(--afrocoin-green); color:var(--afrocoin-white); }
+.activity h2{ color:var(--afrocoin-white); }
+.activity__grid{ display:grid; grid-template-columns:.85fr 1.15fr; gap:clamp(2rem,5vw,4rem); align-items:start; }
+@media (max-width:860px){ .activity__grid{ grid-template-columns:1fr; } }
+.activity__list{ list-style:none; margin:0; padding:0; border-top:1px solid rgba(255,255,255,.14); }
+.activity__list li{ display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.75rem 0; border-bottom:1px solid rgba(255,255,255,.09); }
+.activity__who{ font-size:.9375rem; font-weight:600; }
+.activity__meta{ font-size:.8125rem; color:rgba(255,255,255,.55); }
+.activity__amt{ font-size:.9375rem; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.activity__amt--in{ color:#7ef0aa; }
+/* Entrance animation: feed rows settle in one by one (marquee data). */
+.activity__list li{ opacity:0; transform:translateY(8px); animation:activityIn .5s cubic-bezier(.16,1,.3,1) forwards; }
+@keyframes activityIn{ to{ opacity:1; transform:none; } }
+
+/* ---------- FAQ ---------- */
+.faq{ max-width:760px; }
+.faq details{ border-bottom:1px solid var(--afrocoin-border); }
+.faq summary{
+  list-style:none; cursor:pointer; padding:1.125rem 0;
+  font-weight:700; font-size:1rem;
+  display:flex; justify-content:space-between; align-items:center; gap:1rem;
+}
+.faq summary::-webkit-details-marker{ display:none; }
+.faq summary::after{ content:"+"; font-size:1.375rem; font-weight:400; color:var(--afrocoin-muted-dark); transition:transform .2s; }
+.faq details[open] summary::after{ transform:rotate(45deg); }
+.faq p{ padding:0 2.5rem 1.25rem 0; margin:0; font-size:.9375rem; color:var(--afrocoin-muted-dark); }
+
+/* ---------- CTA ---------- */
+.cta{ background:var(--afrocoin-green); color:var(--afrocoin-white); text-align:center; }
+.cta h2{ color:var(--afrocoin-white); max-width:22ch; margin-inline:auto; }
+.cta p{ color:rgba(255,255,255,.72); max-width:52ch; margin:1rem auto 2rem; }
+.cta__note{ margin:1.25rem 0 0; font-size:.8125rem; color:rgba(255,255,255,.5); }
+
+/* ---------- Footer ---------- */
+.foot{ background:var(--afrocoin-green-dark); color:rgba(255,255,255,.6); padding:3rem 0 2rem; border-top:1px solid rgba(255,255,255,.08); }
+.foot__grid{ display:grid; grid-template-columns:1.6fr 1fr 1fr; gap:2rem; margin-bottom:2.5rem; }
+@media (max-width:700px){ .foot__grid{ grid-template-columns:1fr 1fr; } }
+.foot__brand p{ font-size:.875rem; margin:.875rem 0 0; max-width:34ch; }
+.foot h4{ color:var(--afrocoin-white); font-size:.8125rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin:0 0 .875rem; }
+.foot ul{ list-style:none; margin:0; padding:0; display:grid; gap:.625rem; }
+.foot a{ color:rgba(255,255,255,.6); text-decoration:none; font-size:.9375rem; }
+.foot a:hover{ color:var(--afrocoin-white); }
+.foot__bar{ padding-top:1.5rem; border-top:1px solid rgba(255,255,255,.08); font-size:.8125rem; display:flex; flex-wrap:wrap; gap:.75rem 1.5rem; justify-content:space-between; }
+
+/* ---------- Reveal on scroll (IntersectionObserver, not scroll handlers) ---------- */
+.reveal{ opacity:0; transform:translateY(14px); transition:opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1); }
+.reveal.is-in{ opacity:1; transform:none; }
+@media (prefers-reduced-motion:reduce){
+  html{ scroll-behavior:auto; }
+  .reveal{ opacity:1; transform:none; transition:none; }
+  *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="nav">
+  <div class="shell nav__in">
+    <a class="brand" href="/"><img src="/icons/icon-192.png" alt="" width="34" height="34"><b>afrocoin<i>money</i></b></a>
+    <ul class="nav__links">
+      <li><a href="#levels">Terminals</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#activity">Live activity</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav__actions">
+      <a class="btn btn--onDark" id="navLogin" href="/login.html">Log in</a>
+      <a class="btn btn--accent" id="navSignup" href="/login.html#register">Open free account</a>
+      <button class="nav__burger" id="navBurger" aria-label="Open menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============================ HERO ============================ -->
+<section class="hero">
+  <div class="shell hero__grid reveal-stagger">
+    <div class="reveal reveal--left">
+      <h1 class="h-xl">Daily crypto returns,<br><em>without the crypto know-how</em></h1>
+      <p class="hero__sub">Buy a terminal and it opens a trading session on our servers. Automated scripts run it around the clock while you earn a daily return in your own currency.</p>
+      <div class="hero__cta">
+        <a class="btn btn--accent" id="heroSignup" href="/login.html#register">Open free account</a>
+        <a class="btn btn--onDark" href="#how">See how it works</a>
+      </div>
+      <p class="hero__note">Minimum deposit USD 10. Minimum withdrawal USD 30, less a 10% processing fee.</p>
+    </div>
+    <div class="hero__art reveal reveal--right">
+      <!-- TODO: replace with a real product photograph or app screenshot (1600x1200).
+           Brand mark is shown until then. -->
+      <img src="/icons/icon-512.png" alt="afrocoinmoney" width="420" height="420">
+    </div>
+  </div>
+</section>
+
+<!-- ====================== PROOF (live data) ====================== -->
+<section class="proof" aria-label="Platform activity">
+  <div class="shell">
+    <div class="proof__grid" id="proofGrid">
+      <div class="proof__cell reveal reveal--scale"><div class="proof__num counter" id="statMembers" data-count="1000" data-suffix="+">&nbsp;</div><div class="proof__lbl">Registered members</div></div>
+      <div class="proof__cell reveal reveal--scale"><div class="proof__num counter" id="statPaid" data-usd="1" data-count="23000000" data-suffix="+">&nbsp;</div><div class="proof__lbl">In transactions handled</div></div>
+      <div class="proof__cell reveal reveal--scale"><div class="proof__num counter" id="statTerminals" data-count="200" data-suffix="+">&nbsp;</div><div class="proof__lbl">Active terminals</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ HOW ============================ -->
+<section class="section section--tint" id="how">
+  <div class="shell">
+    <div class="section__head reveal">
+      <h2 class="h-lg">Four things to do</h2>
+      <p class="lede">No wallet setup, no seed phrase, no market timing. You fund a balance, pick a terminal, and collect.</p>
+    </div>
+    <div class="steps">
+      <div class="steps__item reveal"><h3 class="h-md">Create an account</h3><p class="small">Phone number or email. A USD 1 welcome bonus is added to your wallet automatically.</p></div>
+      <div class="steps__item reveal"><h3 class="h-md">Fund your wallet</h3><p class="small">Pay a crypto invoice in BTC, USDT and other coins. Credited once the payment confirms.</p></div>
+      <div class="steps__item reveal"><h3 class="h-md">Buy a terminal session</h3><p class="small">Buying a terminal opens a live session on our servers. Automated trading scripts run it around the clock - nothing to install, nothing to watch.</p></div>
+      <div class="steps__item reveal"><h3 class="h-md">Collect and withdraw</h3><p class="small">Your daily return accrues while the session runs. When the lock period ends, paid out to the crypto address you supply.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================== WHY / BENTO ========================== -->
+<section class="section">
+  <div class="shell">
+    <div class="section__head reveal">
+      <h2 class="h-lg">What you are actually buying</h2>
+      <p class="lede">A terminal is a fixed-price, fixed-term position with one number that matters: the daily percentage. Nothing about it is variable once you are in.</p>
+    </div>
+    <div class="bento">
+      <div class="bento__cell bento__cell--wide bento__cell--dark reveal">
+        <h3 class="h-md">The sessions run on our servers</h3>
+        <p>Buying a terminal starts an automated trading session managed on our infrastructure. Scripts execute around the clock across the majors - your only job is collecting the daily payout it produces.</p>
+      </div>
+      <div class="bento__cell reveal">
+        <h3 class="h-md">Crypto in, crypto out</h3>
+        <p>Deposits and withdrawals are both crypto. There is no banking step and no mobile money anywhere in the flow.</p>
+      </div>
+      <div class="bento__cell reveal">
+        <h3 class="h-md">Your currency, not ours</h3>
+        <p>Everything renders in the currency you pick at signup, and you can switch it later without touching your balance.</p>
+      </div>
+      <div class="bento__cell bento__cell--wide bento__cell--wash reveal">
+        <h3 class="h-md">Withdrawals are settled to a real address</h3>
+        <p>You supply the payout address. The request is debited immediately at the gross amount, then 10% is held as the processing fee and the net amount is sent to you.</p>
+      </div>
+      <div class="bento__cell reveal">
+        <h3 class="h-md">Referrals pay on first deposit</h3>
+        <p>A referral adds USD 2 once they fund their wallet for the first time. Unclaimed referral balance moves into your wallet at USD 30.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================== LEVELS ========================== -->
+<section class="section section--tint" id="levels">
+  <div class="shell">
+    <div class="section__head reveal">
+      <h2 class="h-lg">Terminals and what they pay</h2>
+      <p class="lede">Prices are set in US dollars and converted to your currency at the live rate. Lock period ends and the accumulated return moves into your wallet.</p>
+    </div>
+    <div class="levels" id="levelsTable">
+      <div class="levels__row levels__row--head"><span>Terminal</span><span>Price</span><span>Daily</span><span>Lock</span></div>
+    </div>
+    <p class="small" style="margin-top:1.25rem">Higher terminals pay a larger daily percentage over a shorter lock period. One terminal can be held at a time.</p>
+  </div>
+</section>
+
+<!-- ======================= LIVE ACTIVITY ======================= -->
+<section class="section activity" id="activity">
+  <div class="shell activity__grid">
+    <div class="reveal">
+      <h2 class="h-lg">Recent settled activity</h2>
+      <p class="hero__sub" style="margin-top:1rem">Pulled live from the platform ledger the moment a session settles. Same feed that runs inside the app.</p>
+    </div>
+    <ul class="activity__list reveal" id="activityList">
+      <li><span class="activity__meta">Loading recent activity</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ FAQ ============================ -->
+<section class="section" id="faq">
+  <div class="shell">
+    <div class="section__head reveal">
+      <h2 class="h-lg">Questions people ask first</h2>
+    </div>
+    <div class="faq reveal">
+      <details><summary>I have never used crypto. Is this for me?</summary><p>Yes. You never hold keys, never send a transaction yourself and never see a seed phrase. You fund a balance with crypto and withdraw back to an address you own.</p></details>
+      <details><summary>Where does the daily return come from?</summary><p>Each terminal you buy opens an automated trading session on our servers. Returns accrue against that session daily and are released into your wallet when the lock period matures.</p></details>
+      <details><summary>What does a withdrawal cost?</summary><p>Ten percent of the requested amount is held as a processing fee. Requesting USD 50 debits USD 50 and sends USD 45.</p></details>
+      <details><summary>Can I hold more than one terminal?</summary><p>No. One active terminal per account. When its lock period ends you can open another, usually a larger one.</p></details>
+      <details><summary>Which currencies can I use?</summary><p>Around forty, including UGX, KES, NGN, ZAR, GHS, RWF, TZS and USD. Your choice only affects how figures are displayed, never how they are stored or calculated.</p></details>
+      <details><summary>What do you need from me to pay out?</summary><p>Just a receiving address in the coin you want. We will never ask for your wallet password or recovery phrase.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CTA ============================ -->
+<section class="section cta">
+  <div class="shell reveal">
+    <h2 class="h-lg">Open a terminal from USD 10</h2>
+    <p>That is the cost of the smallest session, and a USD 1 welcome bonus is added to every new wallet automatically.</p>
+    <a class="btn btn--accent" id="ctaSignup" href="/login.html#register">Open free account</a>
+    <p class="cta__note">You need a phone number or email. Nothing else.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="shell">
+    <div class="foot__grid">
+      <div class="foot__brand">
+        <a class="brand" href="/"><img src="/icons/icon-192.png" alt="" width="34" height="34"><b>afrocoin<i>money</i></b></a>
+        <p>Crypto investing for African markets, built for people who did not grow up with it.</p>
+      </div>
+      <div>
+        <h4>Platform</h4>
+        <ul><li><a href="#levels">Terminals</a></li><li><a href="#how">How it works</a></li><li><a href="#activity">Live activity</a></li></ul>
+      </div>
+      <div>
+        <h4>Account</h4>
+        <ul><li><a href="/login.html">Log in</a></li><li><a href="/login.html#register">Open free account</a></li><li><a href="/about.html">About us</a></li></ul>
+      </div>
+    </div>
+    <div class="foot__bar">
+      <span>&copy; <span id="yr"></span> afrocoinmoney</span>
+      <span>Crypto only. No mobile money.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/pwa.js"></script>
+
+<!-- Welcome-bonus claim popup (fires at 80% scroll for guests). -->
+<div class="wb-overlay" id="wbPopup" hidden>
+  <div class="wb-backdrop" data-wb-close></div>
+  <div class="wb-box" role="dialog" aria-modal="true" aria-label="Welcome bonus">
+    <button class="wb-close" data-wb-close aria-label="Close">&times;</button>
+    <div class="wb-badge">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+      <span>USD 1.00</span>
+    </div>
+    <h3>Your welcome bonus is waiting</h3>
+    <p>Open a free account and the USD 1 bonus is credited to your wallet automatically. No card, no deposit needed.</p>
+    <a class="btn btn--accent wb-cta" href="/login.html#register">Claim my bonus</a>
+    <button class="wb-later" data-wb-close>Maybe later</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- Logged-in awareness: if a session exists in this browser, every CTA
+  // points at the dashboard instead of the signup flow. ----
+  var authed = false;
+  try { authed = !!localStorage.getItem('afrocoin_token'); } catch (e) { /* storage blocked */ }
+  if (authed) {
+    var swaps = [
+      { id: 'navLogin', href: '/dashboard', text: 'Go to dashboard', hide: true },
+      { id: 'navSignup', href: '/dashboard', text: 'My dashboard', hide: false },
+      { id: 'heroSignup', href: '/dashboard', text: 'Go to my dashboard', hide: false },
+      { id: 'ctaSignup', href: '/dashboard', text: 'Go to my dashboard', hide: false }
+    ];
+    swaps.forEach(function (s) {
+      var el = document.getElementById(s.id);
+      if (!el) return;
+      el.href = s.href;
+      el.textContent = s.text;
+      if (s.hide) el.style.display = 'none';
+    });
+
+    // ---- "My dashboard" moves from the top nav into the side menu on mobile
+    // so it never overlaps the nav list. The top nav keeps just Log in.
+    var menu = document.getElementById('navSignup');
+    if (menu) {
+      menu.textContent = 'Log in';
+      menu.classList.remove('btn--accent');
+      menu.classList.add('btn--onDark');
+    }
+    var menuList = document.querySelector('.nav__links');
+    if (menuList && !menuList.querySelector('a[href="/dashboard"]')) {
+      var item = document.createElement('li');
+      item.innerHTML = '<a class="btn btn--accent" href="/dashboard">My dashboard</a>';
+      menuList.appendChild(item);
+    }
+  }
+
+  // ---- Welcome-bonus popup: fires once at 80% scroll depth, guests only. ----
+  (function () {
+    var popup = document.getElementById('wbPopup');
+    if (!popup || authed) return;
+    var shown = false;
+    try {
+      if (sessionStorage.getItem('wb_popup_shown')) return;
+    } catch (e) { /* private mode - still allow once per pageview */ }
+
+    function openPopup() {
+      if (shown) return;
+      shown = true;
+      try { sessionStorage.setItem('wb_popup_shown', '1'); } catch (e) { }
+      popup.hidden = false;
+      // Next frame so the transition plays instead of snapping.
+      requestAnimationFrame(function () { popup.classList.add('show'); });
+    }
+    function closePopup() {
+      popup.classList.remove('show');
+      setTimeout(function () { popup.hidden = true; }, 350);
+      window.removeEventListener('scroll', onScroll);
+    }
+    function onScroll() {
+      var doc = document.documentElement;
+      var total = doc.scrollHeight - window.innerHeight;
+      if (total <= 0) return;
+      if ((window.scrollY) / total >= 0.8) openPopup();
+    }
+    popup.addEventListener('click', function (e) {
+      if (e.target.closest('[data-wb-close]')) closePopup();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePopup(); });
+    window.addEventListener('scroll', onScroll, { passive: true });
+  })();
+
+  // ---- Mobile nav: hamburger toggles the section links. ----
+  var burger = document.getElementById('navBurger');
+  var links = document.querySelector('.nav__links');
+  if (burger && links) {
+    burger.addEventListener('click', function () {
+      var open = links.classList.toggle('open');
+      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    });
+    links.addEventListener('click', function (e) {
+      if (e.target.closest('a')) {
+        links.classList.remove('open');
+        burger.setAttribute('aria-expanded', 'false');
+        burger.setAttribute('aria-label', 'Open menu');
+      }
+    });
+  }
+
+  // ---- Reveal on scroll. IntersectionObserver, never a scroll handler. ----
+  var items = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (!e.isIntersecting) return;
+        e.target.classList.add('is-in');
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    items.forEach(function(el, i){
+      el.style.transitionDelay = (i % 4) * 60 + 'ms';
+      io.observe(el);
+    });
+  } else {
+    items.forEach(function(el){ el.classList.add('is-in'); });
+  }
+
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // ---- Live figures. Only real server counts are shown; no invented totals. ----
+  function compact(n){
+    n = Number(n) || 0;
+    if (n >= 1000000) return (n/1000000).toFixed(n >= 10000000 ? 0 : 1).replace(/\.0$/,'') + 'M';
+    if (n >= 1000)    return (n/1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/,'') + 'k';
+    return String(Math.round(n));
+  }
+  function usd(n){
+    n = Number(n) || 0;
+    if (n >= 1000000) return '$' + (n/1000000).toFixed(1).replace(/\.0$/,'') + 'M';
+    if (n >= 1000)    return '$' + (n/1000).toFixed(1).replace(/\.0$/,'') + 'k';
+    return '$' + n.toFixed(0);
+  }
+  // Placeholder dash uses a hyphen-minus, not an em dash, per typography rules.
+  var DASH = '-';
+
+  // ---- Levels come from the seeded bots table so the page cannot drift ----
+  // from what a member is actually offered.
+  fetch('/api/stats/bots', { headers: { Accept: 'application/json' } })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){
+      if (!d || !d.bots || !d.bots.length) return;
+      var table = document.getElementById('levelsTable');
+      var rows = d.bots.map(function(b){
+        return '<div class="levels__row">'
+          + '<span class="levels__name">' + esc(b.name) + '</span>'
+          + '<span class="levels__num">' + usd(b.min_amount) + '</span>'
+          + '<span class="levels__num levels__num--pct">' + esc(b.daily_percent) + '%</span>'
+          + '<span class="levels__num">' + esc(b.lock_days) + ' days</span>'
+          + '</div>';
+      }).join('');
+      table.insertAdjacentHTML('beforeend', rows);
+    })
+    .catch(function(){});
+
+  // ---- Real settled activity - the same Marquee feed the app uses.
+  var TYPE_LABEL = {
+    withdrawal:'Withdrawal', deposit:'Deposit', earnings:'Daily return',
+    referral_bonus:'Referral bonus', bonus:'Welcome bonus',
+    referral_claim:'Referral claim', task_reward:'Task reward'
+  };
+  function timeAgo(ts){
+    var ms = Date.now() - ts;
+    if (ms < 0) ms = 0;
+    var m = Math.floor(ms / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return m + 'm ago';
+    var h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
+  function renderActivity(rows){
+    var list = document.getElementById('activityList');
+    if (!list) return;
+    if (!rows || !rows.length) {
+      list.innerHTML = '<li><span class="activity__meta">No settled activity to show yet.</span></li>';
+      return;
+    }
+    list.innerHTML = rows.slice(0, 12).map(function (t, i) {
+      var isIn = t.type === 'deposit' || t.type === 'referral_bonus' || t.type === 'bonus' || t.type === 'earnings';
+      var label = TYPE_LABEL[t.type] || 'Session';
+      var amt = (isIn ? '+' : '&#8722;') + '$' + (Number(t.amount) || 0).toFixed(2);
+      return '<li style="animation-delay:' + (i * 70) + 'ms">'
+        + '<span>'
+        + '<span class="activity__who">' + esc(label) + ' &middot; ' + esc(t.method || 'CRYPTO') + '</span>'
+        + '<span class="activity__meta">' + esc(timeAgo(new Date(t.created_at).getTime())) + '</span>'
+        + '</span>'
+        + '<span class="activity__amt' + (isIn ? ' activity__amt--in' : '') + '">' + amt + '</span>'
+        + '</li>';
+    }).join('');
+  }
+  function loadActivity(){
+    fetch('/api/marquee', { headers: { Accept: 'application/json' } })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if (!d) throw new Error('feed unavailable');
+        renderActivity(d.transactions || []);
+        // Keep the feed live - the ledger never sleeps and neither does this list.
+        setTimeout(loadActivity, 15000);
+      })
+      .catch(function(){
+        var list = document.getElementById('activityList');
+        if (list && !list.querySelector('[data-error]')) {
+          list.innerHTML = '<li data-error="1"><span class="activity__meta">' + DASH + ' Could not reach the platform. Try again shortly.</span></li>';
+        }
+        setTimeout(loadActivity, 15000);
+      });
+  }
+  loadActivity();
+
+  // ---------- Scroll reveal animations ----------
+  (function(){
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting){
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: .12, rootMargin: '0px 0px -60px 0px' });
+
+    document.querySelectorAll('.reveal, .reveal-stagger > *').forEach(function(el){
+      observer.observe(el);
+    });
+
+    // Animate stat counters when they come into view.
+    var countObserver = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        var target = Number(el.getAttribute('data-count') || el.textContent.replace(/[^\d.]/g,'') || 0);
+        var isUsd = el.getAttribute('data-usd') === '1';
+        var suffix = el.getAttribute('data-suffix') || '';
+        var duration = 1200;
+        var start = performance.now();
+        function frame(now){
+          var p = Math.min(1, (now - start) / duration);
+          var ease = 1 - Math.pow(1 - p, 3);
+          var value = target * ease;
+          var out;
+          if (isUsd) {
+            // Big USD targets render compact ($23M), small ones plain.
+            out = target >= 1000000 ? usd(value) : '$' + Math.round(value).toLocaleString();
+          } else {
+            out = Math.round(value).toLocaleString();
+          }
+          el.textContent = out + suffix;
+          if (p < 1) requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+        countObserver.unobserve(el);
+      });
+    }, { threshold: .12, rootMargin: '0px 0px -80px 0px' });
+
+    document.querySelectorAll('.counter').forEach(function(el){
+      countObserver.observe(el);
+    });
+  })();
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+})();
+</script>
+</body>
+</html>

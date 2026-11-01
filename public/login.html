@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>afrocoinmoney - Login</title>
+  <link rel="icon" type="image/png" href="/icons/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#07211a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="afrocoin" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-brand">
+      <img class="auth-logo" src="logo.png" alt="afrocoinmoney logo" />
+      <h1>afrocoin<span>money</span></h1>
+      <p>Crypto investing for Africa, minus the confusion. You pick a level, we run it for you, and daily earnings land in your wallet.</p>
+    </div>
+
+    <div class="auth-card">
+      <div class="tabs">
+        <button type="button" id="tabLogin" class="active">Login</button>
+        <button type="button" id="tabRegister">Register</button>
+      </div>
+
+      <!-- Login form -->
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginIdentifier">Phone number or e-mail</label>
+          <input id="loginIdentifier" name="identifier" type="text" autocomplete="username" placeholder="+254712345678 or you@mail.com" />
+        </div>
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="Your password" />
+        </div>
+        <!-- Honeypot: hidden from humans, irresistible to form-filling bots. -->
+        <div style="position:absolute;left:-9999px;top:-9999px;" aria-hidden="true">
+          <label for="website">Website</label>
+          <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" value="" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Login</button>
+      </form>
+
+      <!-- Register form -->
+      <form id="registerForm" style="display:none;">
+        <div class="bonus">New members get an instant welcome bonus. Join with a friend&#39;s referral link and start together.</div>
+        <div class="field">
+          <label for="regIdentifier">Phone number or e-mail</label>
+          <input id="regIdentifier" name="identifier" type="text" autocomplete="username" placeholder="+254712345678 or you@mail.com" />
+        </div>
+        <div class="field">
+          <label for="regPassword">Password</label>
+          <input id="regPassword" name="password" type="password" autocomplete="new-password" placeholder="At least 4 characters" />
+        </div>
+        <div class="field">
+          <label for="regReferral">Referral code (optional)</label>
+          <input id="regReferral" name="referral_code" type="text" autocomplete="off" placeholder="Enter a friend's code if you have one" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="registerBtn">Create Account</button>
+      </form>
+
+      <div class="foot-link">Crypto only. Deposit and withdraw in BTC, USDT and more.</div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/pwa.js"></script>
+  <script>
+    var App = window.App;
+
+    // Load the currency catalogue into the signup picker.
+    (async function () {
+      var list = await App.getCurrencies();
+      var sel = document.getElementById('regCurrency');
+      sel.innerHTML = list.map(function (c) {
+        return '<option value="' + c.code + '">' + c.code + ' - ' + c.name + '</option>';
+      }).join('');
+      var saved = localStorage.getItem('afrocoin_currency');
+      if (saved) sel.value = saved;
+    })();
+
+    // Tab switching between login and register.
+    function showTab(which) {
+      document.getElementById('tabLogin').classList.toggle('active', which === 'login');
+      document.getElementById('tabRegister').classList.toggle('active', which === 'register');
+      document.getElementById('loginForm').style.display = which === 'login' ? 'block' : 'none';
+      document.getElementById('registerForm').style.display = which === 'register' ? 'block' : 'none';
+    }
+    document.getElementById('tabLogin').addEventListener('click', function () { showTab('login'); });
+    document.getElementById('tabRegister').addEventListener('click', function () { showTab('register'); });
+
+    // Pre-fill the referral code from the URL (shared referral links) and land
+    // the visitor straight on the Register tab. Accepts ?ref=, #ref= and a
+    // sessionStorage fallback so the code survives redirects in between.
+    var params = new URLSearchParams(window.location.search);
+    var invite = params.get('ref') || '';
+    if (window.location.hash && window.location.hash.indexOf('ref=') === 1) invite = decodeURIComponent(window.location.hash.slice(5));
+    try {
+      if (invite) sessionStorage.setItem('afrocoin_ref', invite);
+      else invite = sessionStorage.getItem('afrocoin_ref') || '';
+    } catch (e) { /* private mode - the URL param still works */ }
+    if (invite) {
+      document.getElementById('regReferral').value = invite;
+      showTab('register');
+      var firstRegField = document.getElementById('regIdentifier');
+      if (firstRegField) { firstRegField.focus(); if (firstRegField.scrollIntoView) firstRegField.scrollIntoView({ block: 'center' }); }
+    } else {
+      showTab('login');
+    }
+
+    // Already a member? Go to the dashboard - unless they clicked an invite
+    // link, which must land on the Register tab (creating the referred
+    // account) without logging them out of the current session.
+    if (App.getToken() && !invite) { window.location.href = '/dashboard'; }
+    else if (App.getToken()) { App.toast('Invite code pre-filled below.', 'info'); }
+
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.textContent = 'Checking...';
+      try {
+        // Bot prevention: solve a lightweight proof-of-work challenge first.
+        var sol = await App.solveChallenge();
+        btn.textContent = 'Please wait...';
+        var data = await App.api('/auth/login', {
+          method: 'POST',
+          body: {
+            identifier: App.normalizeIdentifier(document.getElementById('loginIdentifier').value),
+            password: document.getElementById('loginPassword').value,
+            challenge_id: sol.challenge_id,
+            pow: sol.pow,
+            website: document.getElementById('website').value
+          }
+        });
+        App.setToken(data.token);
+        if (data.user && data.user.currency) App.setCurrency(data.user.currency);
+        window.location.href = '/dashboard';
+      } catch (err) {
+        App.toast(err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Login';
+      }
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var btn = document.getElementById('registerBtn');
+      btn.disabled = true; btn.textContent = 'Please wait...';
+      try {
+        var data = await App.api('/auth/register', {
+          method: 'POST',
+          body: {
+            identifier: App.normalizeIdentifier(document.getElementById('regIdentifier').value),
+            password: document.getElementById('regPassword').value,
+            referral_code: document.getElementById('regReferral').value
+          }
+        });
+        App.setToken(data.token);
+        if (data.user && data.user.currency) App.setCurrency(data.user.currency);
+        App.toast('Welcome to afrocoinmoney.', 'success');
+        setTimeout(function () { window.location.href = '/dashboard'; }, 400);
+      } catch (err) {
+        App.toast(err.message, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Create Account';
+      }
+    });
+  </script>
+</body>
+</html>
+

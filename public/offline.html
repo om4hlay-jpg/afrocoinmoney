@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>afrocoinmoney - You are offline</title>
+  <link rel="icon" type="image/png" href="/icons/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <meta name="theme-color" content="#07211a" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/components.css" />
+  <style>
+    .offline-wrap {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: linear-gradient(160deg, var(--afrocoin-green) 0%, var(--afrocoin-green-mid) 100%);
+      color: var(--afrocoin-white);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .offline-wrap img { width: 84px; height: 84px; border-radius: 20px; margin-bottom: 24px; }
+    .offline-wrap h1 { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
+    .offline-wrap p { color: var(--afrocoin-muted); font-size: 15px; line-height: 1.7; max-width: 340px; margin-bottom: 32px; }
+    .offline-wrap .btn { background: var(--afrocoin-gold); color: var(--afrocoin-green); font-weight: 800; padding: 15px 32px; border-radius: 14px; border: none; font-size: 16px; }
+    .offline-wrap .btn:active { transform: scale(0.98); }
+    .offline-note { margin-top: 24px; font-size: 12px; color: var(--afrocoin-muted-dark); }
+  </style>
+</head>
+<body>
+  <div class="offline-wrap">
+    <img src="/icons/icon-192.png" alt="afrocoinmoney" />
+    <h1>You are offline</h1>
+    <p>Your connection dropped. Reconnect to check your balance, earnings and payouts. Nothing has been lost.</p>
+    <button class="btn" onclick="location.reload()">Try Again</button>
+    <p class="offline-note">Balances are never cached, so what you see after reconnecting is always the latest.</p>
+  </div>
+</body>
+</html>
